@@ -2,150 +2,388 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>爱豆应援收集小游戏</title>
+    <title>收集米爆小游戏 - 黑黄主题</title>
     <style>
-        body{background:#ffe6f0;text-align:center;font-family:微软雅黑;}
-        #game{width:400px;height:600px;background:#fff;margin:20px auto;position:relative;border-radius:12px;overflow:hidden;border:2px solid #fde967;}
-        .heart{width:30px;height:30px;position:absolute;cursor:pointer;color:#fff45e;font-size:24px}
-        #score{font-size:22px;margin:10px;color:#fed12c;font-weight:bold}
-        #life{font-size:22px;margin:10px;color:#fed12c;font-weight:bold}
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            user-select:none;
+        }
+        body{
+            background:#fef7ba;
+            text-align:center;
+            font-family:微软雅黑,sans-serif;
+            padding:20px;
+            color: #000;
+        }
+        .hidden{display:none!important}
+
+        /* 开始界面 */
+        #startScreen{
+            width:400px;
+            height:600px;
+            background:#fff067;
+            border-radius:16px;
+            margin:20px auto;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            border:3px solid #000;
+        }
+        #startScreen h1{
+            font-size:32px;
+            color:#000;
+            margin-bottom:30px;
+        }
+        .diff{
+            margin:10px;
+            padding:12px 24px;
+            background:#000;
+            color:#ffdd00;
+            border:2px solid #000;
+            border-radius:30px;
+            cursor:pointer;
+            font-weight:bold;
+            font-size:16px;
+            transition:0.2s;
+        }
+        .diff:hover{
+            background:#ffdd00;
+            color:#000;
+            transform:scale(1.05);
+        }
+
+        /* 游戏主容器 */
+        #game{
+            width:400px;
+            height:600px;
+            background:#fff067;
+            margin:20px auto;
+            position:relative;
+            border-radius:16px;
+            overflow:hidden;
+            border:3px solid #000;
+            display:none;
+        }
+
+        /* 结束界面 */
+        #endScreen{
+            width:400px;
+            height:600px;
+            background:#fff067;
+            border-radius:16px;
+            margin:20px auto;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            border:3px solid #000;
+            display:none;
+            color:#000;
+        }
+        #endScreen h2{
+            color:#000;
+            margin-bottom:20px;
+        }
+        #finalScore{font-size:22px;margin:10px;color:#000}
+        #bestScore{font-size:18px;color:#000}
+
+        /* 道具样式 */
+        .item{
+            width:36px;
+            height:36px;
+            position:absolute;
+            font-size:28px;
+            text-align:center;
+            transition:transform 0.1s;
+        }
+        .normal{color:#000}
+        .gold{color:#000}
+        .bomb{color:red}
+
+        /* 篮子 */
+        #basket{
+            width:80px;
+            height:30px;
+            background:#ffdd00;
+            border-radius:8px;
+            position:absolute;
+            bottom:10px;
+            left:160px;
+            border:2px solid #000;
+        }
+
+        /* 信息面板 */
+        .info{
+            display:inline-block;
+            background:#000;
+            color:#ffdd00;
+            padding:10px 22px;
+            border-radius:20px;
+            margin:6px;
+            font-weight:bold;
+            border:2px solid #000;
+        }
+        .btn{
+            background:#000;
+            color:#ffdd00;
+            border:none;
+            border-radius:30px;
+            padding:12px 26px;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+            margin:10px;
+            transition:0.2s;
+        }
+        .btn:hover{
+            background:#222;
+            transform:scale(1.05);
+        }
+
+        /* 连击 */
+        #combo{
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            font-size:24px;
+            font-weight:bold;
+            color:#000;
+            opacity:0;
+            transition:0.4s;
+            z-index:99;
+        }
+        #combo.show{
+            opacity:1;
+            transform:translate(-50%,-60%);
+        }
     </style>
 </head>
-<body>
-    <h2>收集米爆小游戏</h2>
-    <button onclick="startGame()" style="padding:8px 16px;font-size:16px;margin:5px;">开始游戏</button>
-    <button onclick="resetGame()" style="padding:8px 16px;font-size:16px;margin:5px;">重新开始</button>
-    <button onclick="toggleMusic()" style="font-size:22px;padding:5px 12px;margin:5px;">🔊</button>
-    <div id="score">得分：0</div>
-    <div id="life">剩余生命：3</div>
-    <div id="game"></div>
-    <div class="tip">点击喇叭开启/关闭背景音乐</div>
 
+<body>
+    <!-- 开始界面 -->
+    <div id="startScreen">
+        <h1>🍿 收集米爆 🍿</h1>
+        <div class="diff" onclick="startGame(1)">简单模式</div>
+        <div class="diff" onclick="startGame(2)">普通模式</div>
+        <div class="diff" onclick="startGame(3)">困难模式</div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game">
+        <div id="combo">COMBO x1</div>
+        <div id="basket"></div>
+    </div>
+
+    <!-- 结束界面 -->
+    <div id="endScreen">
+        <h2>🎮 游戏结束</h2>
+        <div id="finalScore">最终得分：0</div>
+        <div id="bestScore">最高记录：0</div>
+        <button class="btn" onclick="backToStart()">返回主页</button>
+        <button class="btn" onclick="restart()">再来一局</button>
+    </div>
+
+    <!-- 状态栏 -->
+    <div style="display:none" id="status">
+        <div class="info" id="score">得分：0</div>
+        <div class="info" id="life">生命：3</div>
+        <div class="info" id="best">最高分：0</div>
+    </div>
 
     <script>
-        // --- 背景音乐 ---
-        const audio = new Audio("bgm.mp3");
+        // 音乐（没有bgm.mp3文件也不影响游戏运行，只是没背景音乐）
+        const audio = new Audio("./bgm.mp3");
         audio.loop = true;
         audio.volume = 0.3;
-        let musicStart = false;
-        //新增
-        let isPlay = false;
 
+        // 游戏全局
         let score = 0;
-        let life = 3; // 3条命
+        let life = 3;
         let gameOver = false;
-        let dropSpeed = 2; // 初始速度
-        let speedLevel = 0;
-        let gameStarted = false; // 游戏是否开始
-        let heartInterval;       // 爱心生成定时器
+        let dropSpeed = 2;
+        let spawnRate = 900;
+        let best = localStorage.getItem("popBest") || 0;
 
-        const game = document.getElementById("game");
+        let combo = 0;
+        let comboTimer;
+        let itemInterval;
+        const gameArea = document.getElementById("game");
+        const comboText = document.getElementById("combo");
+        let basket = document.getElementById("basket");
+
+        // 全局鼠标移动
+        document.addEventListener("mousemove", function(e) {
+            if(gameOver) return;
+            const rect = gameArea.getBoundingClientRect();
+            let basketX = e.clientX - rect.left - 40;
+            if (basketX < 0) basketX = 0;
+            if (basketX > 320) basketX = 320;
+            basket.style.left = basketX + "px";
+        });
+
+        // DOM
         const scoreDom = document.getElementById("score");
         const lifeDom = document.getElementById("life");
+        const bestDom = document.getElementById("best");
 
-        function createHeart() {
-            if (gameOver) return;
+        // 生成道具
+        function spawnItem(){
+            if(gameOver)return;
+            let item = document.createElement("div");
+            item.className = "item";
 
-            const h = document.createElement("div");
-            h.className = "heart";
-            h.innerText = "🍿";
-            h.style.left = Math.random() * 370 + "px";
-            h.style.top = "0px";
-            game.appendChild(h);
-
-            let t = setInterval(() => {
-                if (gameOver) {
-                    clearInterval(t);
-                    return;
-                }
-
-                let top = parseInt(h.style.top);
-
-                // 碰到底部 = 漏一条命
-                if (top >= 570) {
-                    clearInterval(t);
-                    game.removeChild(h);
-                    loseLife();
-                    return;
-                }
-
-                h.style.top = top + dropSpeed + "px";
-            }, 20);
-
-            // 点击加分
-            h.onclick = () => {
-                if (gameOver) return;
-                score += 10;
-                scoreDom.innerText = "得分：" + score;
-                game.removeChild(h);
-                clearInterval(t);
-
-                // 每得50分加速一次
-                if (score % 50 == 0) {
-                    speedUp();
-                }
-            };
-        }
-
-        // 掉一条命
-        function loseLife() {
-            life--;
-            lifeDom.innerText = "剩余生命：" + life;
-            if (life <= 0) {
-                gameEnd();
+            let r = Math.random();
+            if(r<0.65){
+                item.innerText = "🍿";
+                item.classList.add("normal");
+                item.dataset.score = 10;
+            }else if(r<0.9){
+                item.innerText = "🍩";
+                item.classList.add("gold");
+                item.dataset.score = 50;
+            }else{
+                item.innerText = "💣";
+                item.classList.add("bomb");
+                item.dataset.bomb = 1;
             }
+
+            item.style.left = Math.random() * 364 + "px";
+            item.style.top = "0px";
+            gameArea.appendChild(item);
+            // 下落
+            let fall = setInterval(() => {
+                if (gameOver) { clearInterval(fall); return; }
+                let top = parseInt(item.style.top);
+                item.style.top = top + dropSpeed + "px";
+
+                // 掉出屏幕
+                if (top > 560) {
+                    clearInterval(fall);
+                    if (gameArea.contains(item)) gameArea.removeChild(item);
+
+                    // 只有漏接爆米花/黄金 才断连击 + 扣血
+                    if (!item.dataset.bomb) {
+                        loseLife();
+                        resetCombo();
+                    }
+                }
+
+                // 篮子碰撞
+                let bRect = basket.getBoundingClientRect();
+                let iRect = item.getBoundingClientRect();
+                if (
+                    iRect.right > bRect.left &&
+                    iRect.left < bRect.right &&
+                    iRect.bottom > bRect.top &&
+                    iRect.top < bRect.bottom
+                ) {
+                    clearInterval(fall);
+                    gameArea.removeChild(item);
+
+                    if (item.dataset.bomb) {
+                        loseLife(); // 接到炸弹只扣血，不断连击
+                    } else {
+                        addScore(parseInt(item.dataset.score));
+                        showCombo();
+                    }
+                }
+            }, 20);
+        }
+        // 加分 + 连击
+        function addScore(num){
+            combo++;
+            let add = num * combo;
+            score += add;
+            updateUI();
+        }
+        function resetCombo(){combo=0}
+        function showCombo(){
+            comboText.innerText = `COMBO x${combo}`;
+            comboText.classList.add("show");
+            clearTimeout(comboTimer);
+            comboTimer = setTimeout(()=>{
+                comboText.classList.remove("show");
+            },600);
         }
 
-        // 加速
-        function speedUp() {
-            dropSpeed += 0.3;
+        // 扣血
+        function loseLife(){
+            life--;
+            updateUI();
+            if(life<=0) gameEnd();
+        }
+
+        // UI 更新
+        function updateUI(){
+            scoreDom.innerText = `得分：${score}`;
+            lifeDom.innerText = `生命：${life}`;
+            bestDom.innerText = `最高分：${best}`;
         }
 
         // 游戏结束
-        function gameEnd() {
+        function gameEnd(){
             gameOver = true;
+            clearInterval(itemInterval);
             audio.pause();
-            alert("游戏结束！\n最终得分：" + score);
-            clearInterval(heartInterval);
-        }
-
-        // 自动生成爱心（只有游戏开始才运行）
-        function startGame(){
-            if(gameStarted) return;
-            gameStarted = true;
-            heartInterval = setInterval(createHeart, 800);
-        }
-        // 重新开始
-        function resetGame(){
-            location.reload();
-        }
-
-        //喇叭开关音乐
-
-        function toggleMusic(){
-            if(isPlay){
-            audio.pause();
-            isPlay = false;
-        }else{
-            audio.play();
-            isPlay = true;
+            if(score>best){
+                best=score;
+                localStorage.setItem("popBest",best);
             }
-     }
-     
-     //重开：直接复位数据、自动开局，不用再点开始
-        function resetGame(){
-            //清空所有爱心
-            game.innerHTML = "";
-            score = 0;
-            life = 3;
-            dropSpeed = 2;
-            gameOver = false;
-            gameStarted = true;
-            scoreDom.innerText = "得分："+score;
-            lifeDom.innerText = "剩余生命："+life;
-            clearInterval(heartInterval);
-            heartInterval = setInterval(createHeart,800);
+            document.getElementById("finalScore").innerText = `最终得分：${score}`;
+            document.getElementById("bestScore").innerText = `最高记录：${best}`;
+            gameArea.style.display = "none";
+            document.getElementById("endScreen").style.display = "flex";
+            document.getElementById("status").style.display = "none";
         }
-        </script>
+
+        // 开始游戏（难度选择）
+        function startGame(diff){
+            if(diff===1){dropSpeed=1.5;spawnRate=1000}
+            if(diff===2){dropSpeed=2.2;spawnRate=800}
+            if(diff===3){dropSpeed=3;spawnRate=600}
+
+            document.getElementById("startScreen").style.display = "none";
+            gameArea.style.display = "block";
+            document.getElementById("status").style.display = "block";
+            resetGame();
+            try{audio.play();}catch(e){}
+        }
+
+        // 重置游戏【关键修复：不再清空game全部内容，只清掉落物品】
+        function resetGame(){
+            //只删除掉落的道具，保留combo和basket
+            const allItems = gameArea.querySelectorAll(".item");
+            allItems.forEach(el=>el.remove());
+
+            score=0; life=3; gameOver=false; combo=0;
+            basket.style.left = "160px";
+            updateUI();
+            clearInterval(itemInterval);
+            itemInterval = setInterval(spawnItem, spawnRate);
+        }
+
+        // 返回主页
+        function backToStart(){
+            document.getElementById("endScreen").style.display = "none";
+            document.getElementById("startScreen").style.display = "flex";
+            document.getElementById("status").style.display = "none";
+            gameArea.style.display = "none";
+            audio.pause();
+            clearInterval(itemInterval);
+        }
+
+        // 再来一局
+        function restart(){
+            document.getElementById("endScreen").style.display = "none";
+            gameArea.style.display = "block";
+            document.getElementById("status").style.display = "block";
+            audio.currentTime=0;
+            try{audio.play();}catch(e){}
+            resetGame();
+        }
+    </script>
 </body>
 </html>
