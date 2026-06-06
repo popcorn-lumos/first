@@ -2,51 +2,150 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>爱豆应援小游戏</title>
+    <title>爱豆应援收集小游戏</title>
     <style>
-        body{background:#ffe6f0;text-align:center}
-        #game{width:400px;height:600px;background:#fff;margin:20px auto;position:relative;border-radius:12px;overflow:hidden}
-        .heart{width:30px;height:30px;position:absolute;cursor:pointer;color:#ff5e97;font-size:24px}
-        #score{font-size:22px;margin:10px;color:#ff4987}
+        body{background:#ffe6f0;text-align:center;font-family:微软雅黑;}
+        #game{width:400px;height:600px;background:#fff;margin:20px auto;position:relative;border-radius:12px;overflow:hidden;border:2px solid #fde967;}
+        .heart{width:30px;height:30px;position:absolute;cursor:pointer;color:#fff45e;font-size:24px}
+        #score{font-size:22px;margin:10px;color:#fed12c;font-weight:bold}
+        #life{font-size:22px;margin:10px;color:#fed12c;font-weight:bold}
     </style>
 </head>
 <body>
-    <h2>💖 爱豆应援收集小游戏</h2>
+    <h2>收集米爆小游戏</h2>
+    <button onclick="startGame()" style="padding:8px 16px;font-size:16px;margin:5px;">开始游戏</button>
+    <button onclick="resetGame()" style="padding:8px 16px;font-size:16px;margin:5px;">重新开始</button>
+    <button onclick="toggleMusic()" style="font-size:22px;padding:5px 12px;margin:5px;">🔊</button>
     <div id="score">得分：0</div>
+    <div id="life">剩余生命：3</div>
     <div id="game"></div>
+    <div class="tip">点击喇叭开启/关闭背景音乐</div>
+
 
     <script>
-        let score = 0
-        const game = document.getElementById('game')
-        const scoreDom = document.getElementById('score')
+        // --- 背景音乐 ---
+        const audio = new Audio("https://www.bilibili.com/video/BV1o8ZEBoE4f/?spm_id_from=333.337.search-card.all.click");
+        audio.loop = true;
+        audio.volume = 0.3;
+        let musicStart = false;
+        //新增
+        let isPlay = false;
 
-        function createHeart(){
-            const h = document.createElement('div')
-            h.className = 'heart'
-            h.innerText = '❤️'
-            h.style.left = Math.random()*370 + 'px'
-            h.style.top = '0px'
-            game.appendChild(h)
+        let score = 0;
+        let life = 3; // 3条命
+        let gameOver = false;
+        let dropSpeed = 2; // 初始速度
+        let speedLevel = 0;
+        let gameStarted = false; // 游戏是否开始
+        let heartInterval;       // 爱心生成定时器
 
-            let t = setInterval(()=>{
-                let top = parseInt(h.style.top)
-                if(top > 570){
-                    clearInterval(t)
-                    game.removeChild(h)
-                }else{
-                    h.style.top = top + 2 + 'px'
+        const game = document.getElementById("game");
+        const scoreDom = document.getElementById("score");
+        const lifeDom = document.getElementById("life");
+
+        function createHeart() {
+            if (gameOver) return;
+
+            const h = document.createElement("div");
+            h.className = "heart";
+            h.innerText = "🍿";
+            h.style.left = Math.random() * 370 + "px";
+            h.style.top = "0px";
+            game.appendChild(h);
+
+            let t = setInterval(() => {
+                if (gameOver) {
+                    clearInterval(t);
+                    return;
                 }
-            },20)
 
-            h.onclick = ()=>{
-                score+=10
-                scoreDom.innerText = '得分：'+score
-                game.removeChild(h)
-                clearInterval(t)
+                let top = parseInt(h.style.top);
+
+                // 碰到底部 = 漏一条命
+                if (top >= 570) {
+                    clearInterval(t);
+                    game.removeChild(h);
+                    loseLife();
+                    return;
+                }
+
+                h.style.top = top + dropSpeed + "px";
+            }, 20);
+
+            // 点击加分
+            h.onclick = () => {
+                if (gameOver) return;
+                score += 10;
+                scoreDom.innerText = "得分：" + score;
+                game.removeChild(h);
+                clearInterval(t);
+
+                // 每得50分加速一次
+                if (score % 50 == 0) {
+                    speedUp();
+                }
+            };
+        }
+
+        // 掉一条命
+        function loseLife() {
+            life--;
+            lifeDom.innerText = "剩余生命：" + life;
+            if (life <= 0) {
+                gameEnd();
             }
         }
 
-        setInterval(createHeart,800)
-    </script>
+        // 加速
+        function speedUp() {
+            dropSpeed += 0.3;
+        }
+
+        // 游戏结束
+        function gameEnd() {
+            gameOver = true;
+            audio.pause();
+            alert("游戏结束！\n最终得分：" + score);
+            clearInterval(heartInterval);
+        }
+
+        // 自动生成爱心（只有游戏开始才运行）
+        function startGame(){
+            if(gameStarted) return;
+            gameStarted = true;
+            heartInterval = setInterval(createHeart, 800);
+        }
+        // 重新开始
+        function resetGame(){
+            location.reload();
+        }
+
+        //喇叭开关音乐
+
+        function toggleMusic(){
+            if(isPlay){
+            audio.pause();
+            isPlay = false;
+        }else{
+            audio.play();
+            isPlay = true;
+            }
+     }
+     
+     //重开：直接复位数据、自动开局，不用再点开始
+        function resetGame(){
+            //清空所有爱心
+            game.innerHTML = "";
+            score = 0;
+            life = 3;
+            dropSpeed = 2;
+            gameOver = false;
+            gameStarted = true;
+            scoreDom.innerText = "得分："+score;
+            lifeDom.innerText = "剩余生命："+life;
+            clearInterval(heartInterval);
+            heartInterval = setInterval(createHeart,800);
+        }
+        </script>
 </body>
 </html>
