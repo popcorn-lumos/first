@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>爱豆应援小游戏</title>
+    <style>
+        body{background:#ffe6f0;text-align:center}
+        #game{width:400px;height:600px;background:#fff;margin:20px auto;position:relative;border-radius:12px;overflow:hidden}
+        .heart{width:30px;height:30px;position:absolute;cursor:pointer;color:#ff5e97;font-size:24px}
+        #score{font-size:22px;margin:10px;color:#ff4987}
+    </style>
+</head>
+<body>
+    <h2>💖 爱豆应援收集小游戏</h2>
+    <div id="score">得分：0</div>
+    <div id="game"></div>
+
+    <script>
+        let score = 0
+        const game = document.getElementById('game')
+        const scoreDom = document.getElementById('score')
+
+        function createHeart(){
+            const h = document.createElement('div')
+            h.className = 'heart'
+            h.innerText = '❤️'
+            h.style.left = Math.random()*370 + 'px'
+            h.style.top = '0px'
+            game.appendChild(h)
+
+            let t = setInterval(()=>{
+                let top = parseInt(h.style.top)
+                if(top > 570){
+                    clearInterval(t)
+                    game.removeChild(h)
+                }else{
+                    h.style.top = top + 2 + 'px'
+                }
+            },20)
+
+            h.onclick = ()=>{
+                score+=10
+                scoreDom.innerText = '得分：'+score
+                game.removeChild(h)
+                clearInterval(t)
+            }
+        }
+
+        setInterval(createHeart,800)
+    </script>
+</body>
+</html>
